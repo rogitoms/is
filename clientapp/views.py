@@ -1,15 +1,16 @@
 from django.shortcuts import render
 from django.db import transaction
-from clientapp.models import ClientApplication, ClientFirearm
+from Authapp.models import User
+from clientapp.models import ClientApplication, ClientFirearm, ClientProfile
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from clientapp.serializer import ClientApplicationViewSerializer, ClientFirearmSerializer, ClientProfileSerializer
 
 
-class ClientProfile(viewsets.ViewSet):
+class ClientProfileView(viewsets.ViewSet):
     serializer_class = ClientProfileSerializer
-    permission_classes = [permissions.isAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_profile(self, request):
         user = request.user
@@ -19,6 +20,7 @@ class ClientProfile(viewsets.ViewSet):
             return Response({'data':serializer.data}, status=200)
         else:
             return Response({"error": 'No such client'}, status=500)
+        
         
     def update(self, request):
         data = request.data
@@ -36,7 +38,7 @@ class ClientProfile(viewsets.ViewSet):
 # Client applications
 class ClientApplicationView(viewsets.ViewSet):
     serializer_class = ClientApplicationViewSerializer
-    permission_classes = [permissions.isAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     # get client applications 
     def get_applications(self, request):
@@ -55,21 +57,29 @@ class ClientApplicationView(viewsets.ViewSet):
     # client application 
     def create(self, request):
         try:
-            with transaction.atomic():
-                data = request.data
-                serializer = self.serializer_class(data=data)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                return Response(serializer.data, status=201)
+            with transaction.atomic():                
+                user = request.user    
+                print('user', user, User.objects.count())   
+
+                client = ClientProfile.objects.filter(user__id=user).first()
+                if client:
+                    data = request.data
+                    data['client'] = client.id
+                    serializer = self.serializer_class(data=data)
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
+                    return Response({'message': 'success', 'succcess': True, data:serializer.data}, status=201)
+                else:
+                    return Response({'message':"No such client"}, status=400)
             
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            return Response({"error": str(e), 'success': False}, status=500)
 
 
 # Client firearms
 class ClientFirearmsView(viewsets.ViewSet):
     serializer_class = ClientFirearmSerializer
-    permission_classes = [permissions.isAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_client_firearms(self, request):
         try:

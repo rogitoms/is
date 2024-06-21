@@ -12,5 +12,5 @@ APPLICATION_STATUS = (
 
 ARMED_STATUS = (
     ('Armed', 'Armed'),
-    ('Disarmed', 'Disarmed'),
+    ('Disarmed', 'Disarmed')
 )

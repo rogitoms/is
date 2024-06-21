@@ -27,55 +27,67 @@ class RegisterView(viewsets.ViewSet):
             with transaction.atomic():
                 data = request.data
                 print('data', data)
-                email = data.get("email")
+                user_type = data.get("user_type")
                 user = None
                 data['phone'] = data.get('phone_number')
 
-                serializer = self.serializer_class(data=data)
+                serializer = self.serializer_class(data=request.data)
                 serializer.is_valid(raise_exception=True)
                 user = serializer.save()
-
-                if user.user_type == "Client":
-                    first_Name = data.get('first_name')
-                    last_Name = data.get('last_name')
-                    surname = data.get('surname')
-                    ID_Number = data.get('id_number')
-                    phone_number = data.get('phone_number')
-                    profile = ClientProfile.objects.create(user=user,first_Name = first_Name,last_Name = last_Name,surname = surname, ID_Number = ID_Number,phone_number = phone_number,)
-                    profile.save()
-
-                # if user.user_type == "Fundi":
-
-                #     profile = FundiProfile(
-                #         user=user,
-                #     )
-                #     profile.save()
-
-                # elif user.user_type == "Admin":
-                #     profile = AdminProfile(user=user)
-                #     profile.save()
-
+                
                 if user:
-                    context = {
-                        "phone": user.phone,
-                        "username": user.email,
-                    }
-                
-                # otp = generate_otp()
-                # user_otp = UserOTP.objects.create(otp=otp, user=user, is_confirmed=False)
-                # SendSmsThread([user_otp.user.phone], f'Your One Time Password (OTP) is: {user_otp.otp}').start()
-                
-                # send_register_email_task.delay([email, ], "Sycomfy Successful Registration", "email/registration.html", context=context)
+                    print('user', user)
 
-                
-                return Response(
-                    {
-                        "success": True,
-                        "data": serializer.data,
-                        "message": "Successfully registered",
-                    },
-                    status=status.HTTP_201_CREATED,
-                )
+                    if user_type == "Client":
+                        user = user
+                        first_Name = data.get('first_name')
+                        last_Name = data.get('last_name')
+                        surname = data.get('surname')
+                        ID_Number = data.get('ID_number')
+                        phone_number = data.get('phone_number')
+
+                        profile = ClientProfile.objects.create(
+                            user=user,
+                            first_Name = first_Name,
+                            last_Name = last_Name,
+                            surname = surname, 
+                            ID_Number = ID_Number,
+                            phone_number = phone_number
+                        )
+                        profile.save()
+
+                    # if user.user_type == "Fundi":
+
+                    #     profile = FundiProfile(
+                    #         user=user,
+                    #     )
+                    #     profile.save()
+
+                    # elif user.user_type == "Admin":
+                    #     profile = AdminProfile(user=user)
+                    #     profile.save()
+
+                    if user:
+                        context = {
+                            "phone": user.phone,
+                            "username": user.email,
+                        }
+                    
+                    # otp = generate_otp()
+                    # user_otp = UserOTP.objects.create(otp=otp, user=user, is_confirmed=False)
+                    # SendSmsThread([user_otp.user.phone], f'Your One Time Password (OTP) is: {user_otp.otp}').start()
+                    
+                    # send_register_email_task.delay([email, ], "Sycomfy Successful Registration", "email/registration.html", context=context)
+
+                    
+                    return Response(
+                        {
+                            "success": True,
+                            "data": serializer.data,
+                            "message": "Successfully registered",
+                        },
+                        status=status.HTTP_201_CREATED,
+                    )
 
         except Exception as e:
             print(e)
@@ -131,17 +143,16 @@ class LoginView(KnoxLoginView):
             with transaction.atomic():
 
                 print('request', request.data)
-                serializer = AuthTokenSerializer(data=request.data)
+                data = request.data
+                serializer = AuthTokenSerializer(data=data)
                 serializer.is_valid(raise_exception=True)
                 user = serializer.validated_data['user']
                 # userOTP = UserOTP.objects.filter(user=user).first()
                 # if userOTP and userOTP.is_confirmed == True:
                 login(request, user)
-                print('serializer', user.email, super(LoginView, self).post(request, format=None).data )
-                email = user.email
                 data = super(LoginView, self).post(request, format=None).data
-                data['username'] = email
-                data['id'] = user.id
+                data['user']['phone'] = user.phone
+                data['user']['id'] = user.id
 
                 return Response({'data':data}) 
                 # else:
@@ -149,4 +160,4 @@ class LoginView(KnoxLoginView):
 
         except Exception as e:
             print(e)
-            return Response({'success': False, 'message': 'Account is not verified'})
+            return Response({'success': False, 'message': 'Unable to login user', 'error': str(e)})

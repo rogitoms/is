@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-68mw1bdr^-ot6mr_yj2ik9=m%$jmni!-i6%g!=yug&3t_zzpq(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,15 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "corsheaders",
 
     'rest_framework',
     'knox',
     "clientapp",
     "Authapp",
     "vendorapp",
+    "adminApp",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,8 +61,25 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'ISPROJECT.urls'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES':('knox.auth.TokenAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'knox.auth.TokenAuthentication',
+    ],
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
 
 # These are the default values if none are set 
 from datetime import timedelta

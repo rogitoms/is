@@ -8,6 +8,7 @@ class clientAppModel(models.Model):
 
 
 class ClientProfile(clientAppModel):
+    user = models.OneToOneField('Authapp.User', on_delete=models.CASCADE, related_name="client_profile")
     first_Name = models.CharField(max_length=30)
     last_Name = models.CharField(max_length=30)
     surname = models.CharField(max_length=30,blank=True, null=True)
@@ -32,7 +33,7 @@ class ClientApplication(clientAppModel):
     
 class ClientFirearm(clientAppModel):
     client = models.ForeignKey('clientapp.ClientProfile', on_delete=models.CASCADE, related_name="client_firearm")
-    firearm = models.ForeignKey('vendorapp.Firearm', on_delete=models.CASCADE, related_name="client__assigned_firearm")
+    firearm = models.ForeignKey('vendorapp.Firearm', on_delete=models.CASCADE, related_name="client_assigned_firearm")
     status = models.CharField(max_length=20, choices=ARMED_STATUS)
 
 

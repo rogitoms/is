@@ -1,10 +1,10 @@
 from django.urls import path
 
-from clientapp.views import ClientApplicationView, ClientFirearmsView
+from clientapp.views import ClientApplicationView, ClientFirearmsView, ClientProfileView
 
 urlpatterns = [
-    path('profile', ClientApplicationView.as_view({'get': 'get_profile'}), name='get_profile'),
-    path('update-profile', ClientApplicationView.as_view({'post': 'update'}), name='update_profile'),
+    path('profile', ClientProfileView.as_view({'get': 'get_profile'}), name='get_profile'),
+    path('update-profile', ClientProfileView.as_view({'post': 'update'}), name='update_profile'),
 
     path('applications', ClientApplicationView.as_view({'get': 'get_applications'}), name='get_applications'),
     path('apply', ClientApplicationView.as_view({'post': 'create'}), name='apply'),

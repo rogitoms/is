@@ -23,32 +23,24 @@ USER_TYPE = (
 
 # Create your models here.
 class MyAccountManager(BaseUserManager):
-    def create_user(self, user_type, phone, email, password=None):
-        if not phone:
-            raise ValueError("Users must have a phone number")
 
-        user = self.model(
-            user_type=user_type,
-            phone=phone,
-            email=email,
-        )
+    def create_user(self, email, user_type, phone, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        extra_fields.setdefault('is_active', True)
+        user = self.model(email=email, user_type=user_type, phone=phone,**extra_fields)
         user.set_password(password)
-        user.is_staff = True
         user.save(using=self._db)
         return user
 
-    def create_superuser(self,  user_type, phone, password, email):
-        user = self.create_user(
-            user_type=user_type,
-            phone=phone,
-            password=password,
-            email=email,
-        )
-        user.is_admin = True
-        user.is_staff = True
-        user.is_superuser = True
-        user.save(using=self._db)
-        return user
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        return self.create_user(email, password, **extra_fields)
+    
+
 
 
 class User(AbstractBaseUser, PermissionsMixin):
