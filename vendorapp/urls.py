@@ -1,7 +1,8 @@
+# urls.py
 from django.urls import path
-from clientapp.views import ClientFirearmsView
+from .views import FirearmViewSet
 
 urlpatterns = [
-    path('firearms', ClientFirearmsView.as_view({'get': 'get_client_firearms'}), name='vendor_firearms'),
-    path('firearms/<int:id>', ClientFirearmsView.as_view({'get': 'details'}), name='vendor_firearm_details'),
+    path('firearms', FirearmViewSet.as_view({'get': 'list_firearms', 'post': 'create_firearm'}), name='firearms'),
+    path('firearms/<int:id>', FirearmViewSet.as_view({'get': 'retrieve_firearm'}), name='firearm_details'),
 ]
